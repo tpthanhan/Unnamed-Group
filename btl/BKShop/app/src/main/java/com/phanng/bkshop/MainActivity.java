@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
                     if (lastNavigationItemSelected != R.id.navigation_sell) {
                         searchBarView.setVisibility(View.VISIBLE);
                         addProductButton.setVisibility(View.VISIBLE);
+
                         showMyProduct();
                     }
                     lastNavigationItemSelected = R.id.navigation_sell;
@@ -119,6 +120,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showProduct() {
+        layoutManager = new LinearLayoutManager(MainActivity.this);
+        recyclerView.setLayoutManager(layoutManager);
         if (productData == null) {
             AsyncTask<String,Void,List<Product>> task = new GetProductListAsyncTask();
             task.execute("get-product");
@@ -130,10 +133,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showMyProduct() {
+        layoutManager = new LinearLayoutManager(MainActivity.this);
+        recyclerView.setLayoutManager(layoutManager);
         if (myProductData == null) {
             AsyncTask<String,Void,List<Product>> task = new GetMyProductAsyncTask();
             task.execute("get-my-product");
         } else {
+
             adapter = new ProductAdapter(myProductData);
             recyclerView.setAdapter(adapter);
         }

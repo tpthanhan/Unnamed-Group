@@ -17,13 +17,13 @@ import java.util.List;
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHolder> {
     private List<Product> dataset;
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+        class ViewHolder extends RecyclerView.ViewHolder {
 
-        public ImageView imageView;
-        public TextView productName;
-        public TextView productPrice;
+            ImageView imageView;
+            TextView productName;
+            TextView productPrice;
 
-        public ViewHolder(LinearLayout linearLayout) {
+        ViewHolder(LinearLayout linearLayout) {
             super(linearLayout);
             this.imageView = linearLayout.findViewById(R.id.product_image_listitem);
             this.productName = linearLayout.findViewById(R.id.product_name_listitem);
@@ -32,7 +32,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         }
 
 
-    }
+        }
 
     ProductAdapter(List<Product> dataset){
         this.dataset = dataset;
