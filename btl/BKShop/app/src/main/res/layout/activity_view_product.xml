@@ -19,15 +19,23 @@
             <TextView
                 android:id="@+id/product_name_viewproduct"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textSize="32sp"
+                android:gravity="center"
+                android:textStyle="bold"/>
             <TextView
                 android:id="@+id/product_price_viewproduct"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textSize="32sp"
+                android:gravity="center"
+                android:textStyle="bold"/>
             <TextView
                 android:id="@+id/product_description_viewproduct"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textSize="32sp"
+                android:gravity="center"/>
         </LinearLayout>
     </ScrollView>
     <Button
