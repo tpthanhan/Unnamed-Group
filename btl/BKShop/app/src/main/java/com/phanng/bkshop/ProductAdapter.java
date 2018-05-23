@@ -23,19 +23,35 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
             TextView productName;
             TextView productPrice;
 
-        ViewHolder(LinearLayout linearLayout) {
-            super(linearLayout);
-            this.imageView = linearLayout.findViewById(R.id.product_image_listitem);
-            this.productName = linearLayout.findViewById(R.id.product_name_listitem);
-            this.productPrice = linearLayout.findViewById(R.id.product_price_listitem);
+            LinearLayout linearLayout;
 
+            ViewHolder(LinearLayout linearLayout) {
+                super(linearLayout);
+                this.imageView = linearLayout.findViewById(R.id.product_image_listitem);
+                this.productName = linearLayout.findViewById(R.id.product_name_listitem);
+                this.productPrice = linearLayout.findViewById(R.id.product_price_listitem);
+                this.linearLayout = linearLayout;
+            }
+            void bind(final Product product, final ProductAdapter.onItemClickListener listener){
+
+                this.linearLayout.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        listener.onItemClick(product);
+                    }
+                });
+            }
         }
 
+    ProductAdapter.onItemClickListener listener;
 
-        }
+    public interface onItemClickListener {
+            void onItemClick(Product product);
+    }
 
-    ProductAdapter(List<Product> dataset){
+    ProductAdapter(List<Product> dataset, onItemClickListener listener){
         this.dataset = dataset;
+        this.listener = listener;
     }
 
     @NonNull
@@ -53,6 +69,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         Product product = dataset.get(position);
         holder.productName.setText(product.getProductName());
         holder.productPrice.setText(Integer.toString(product.getProductPrice()));
+        holder.bind(product,listener);
     }
 
     @Override

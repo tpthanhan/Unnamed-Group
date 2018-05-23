@@ -20,7 +20,12 @@
  */
 package com.phanng.bkshop.restutil;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Base64;
+
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -345,7 +350,7 @@ public class RestServiceClient {
             if (obj.getString("status").equals("SUCCESS")) {
                 JSONArray temp = obj.getJSONArray("message");
                 for (int i = 0; i < temp.length(); i++) {
-                    categoryList.add(temp.get(i).toString());
+                    categoryList.add(temp.getJSONObject(i).getString("name"));
                 }
                 result = new Pair<>(obj.getString("status"), categoryList);
             } else {
@@ -364,12 +369,33 @@ public class RestServiceClient {
         return result;
     }
 
+
+    public String encodeToString(String fileName) {
+        String imageString = null;
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            Bitmap bitmap = BitmapFactory.decodeFile(fileName);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+            byte[] imageBytes = baos.toByteArray();
+            imageString = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+            imageString = imageString.replace("\n", "\\n");
+            imageString = imageString.replace("\r", "\\r");
+            baos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return imageString;
+    }
+
     public Pair<String, String> uploadImage(String access_token, String image) {
         Pair<String, String> result = new Pair<>("FAIL", "");
-        String abc = homeUrl + "/api/login";
-        // create connection
+        String abc = homeUrl + "/api/images";
+
         try {
+            // create connection
             HttpURLConnection connection = createConnection(abc, "POST");
+            connection.setRequestProperty("Authorization", access_token);
+
             String input = "{\"image\":\"" + image + "\"}";
             OutputStream os = connection.getOutputStream();
             os.write(input.getBytes());
@@ -384,12 +410,10 @@ public class RestServiceClient {
             connection.disconnect();
             // gen to JSONObject
             JSONObject obj = new JSONObject(response);
-            result = new Pair<String, String>(obj.getString("status"), obj.getJSONObject("message").getString("token"));
+            result = new Pair<String, String>(obj.getString("status"), obj.getString("message"));
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (JSONException e) {
             e.printStackTrace();
         }
 

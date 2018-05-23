@@ -3,20 +3,19 @@ package com.phanng.bkshop;
 import android.content.Context;
 
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -27,7 +26,6 @@ import com.squareup.picasso.Picasso;
 
 import org.apache.commons.math3.util.Pair;
 import org.jetbrains.annotations.NotNull;
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +51,7 @@ public class AddProductActivity extends AppCompatActivity {
     ArrayList<String> imageListData;
 
     //Images uri data
-    ArrayList<String> imageUriData;
+    ArrayList<String> imageUriData = new ArrayList<>();
 
     List<String> categoryList;
 
@@ -127,6 +125,7 @@ public class AddProductActivity extends AppCompatActivity {
                     new AsyncTask<Void,Void,Boolean>() {
                         @Override
                         protected Boolean doInBackground(Void... voids) {
+
                             SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                                     getString(R.string.preference_file_key), Context.MODE_PRIVATE);
                             String token = sharedPref.getString("token", null);
@@ -141,7 +140,15 @@ public class AddProductActivity extends AppCompatActivity {
 
                         @Override
                         protected void onPostExecute(Boolean aBoolean) {
-                            super.onPostExecute(aBoolean);
+                            if (aBoolean == false){
+                                Toast.makeText(AddProductActivity.this,"Add product failed",Toast.LENGTH_LONG)
+                                        .show();
+                                return;
+                            }
+                            Toast.makeText(AddProductActivity.this,"Add product successful !",
+                                    Toast.LENGTH_SHORT).show();
+                            finish();
+
                         }
                     }.execute();
                 }
@@ -159,7 +166,7 @@ public class AddProductActivity extends AppCompatActivity {
 
             ViewHolder (View view) {
                 super(view);
-                this.imageZoom = view.findViewById(R.id.image_item_addproduct);
+                this.imageZoom = view.findViewById(R.id.image_item_rv);
             }
 
             public void bind(String uri) {
@@ -209,9 +216,16 @@ public class AddProductActivity extends AppCompatActivity {
             }
 
             @Override
-            protected void onPostExecute(List<String> strings) {
-                Toast.makeText(AddProductActivity.this,"Retrieving categories failed",Toast.LENGTH_LONG)
-                        .show();
+            protected void onPostExecute(List<String> res) {
+                if (res == null) {
+                    Toast.makeText(AddProductActivity.this,"Retrieving categories failed",Toast.LENGTH_LONG)
+                            .show();
+                }
+                categoryList = res;
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(AddProductActivity.this,
+                        android.R.layout.simple_spinner_item,categoryList);
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                productCategory.setAdapter(adapter);
             }
         }.execute();
 
@@ -233,7 +247,11 @@ public class AddProductActivity extends AppCompatActivity {
             res = false;
             productQuantity.setError("Cannot leave blank");
         }
-        if (imageListData.size() == 0){
+        if (imageListData == null){
+            res = false;
+            Toast.makeText(AddProductActivity.this,"Please choose some pictures",
+                    Toast.LENGTH_SHORT).show();
+        } else if (imageListData.size() == 0){
             res = false;
             Toast.makeText(AddProductActivity.this,"Please choose some pictures",
                     Toast.LENGTH_SHORT).show();
@@ -254,8 +272,43 @@ public class AddProductActivity extends AppCompatActivity {
         int quantity = Integer.parseInt(productQuantity.getText().toString());
         String description = productDescription.getText().toString();
 
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        String token = sharedPref.getString("token", null);
+        RestServiceClient client = RestServiceClient.getInstance();
+        for (String i : imageListData){
+            Pair<String,String> res = client.uploadImage(token,client.encodeToString(i));
+            imageUriData.add(res.getSecond());
+        }
+
         List<String> tagList = new ArrayList<>();
         tagList.add(tag);
         return new Product(name,category,price,imageUriData,description,tagList,quantity);
+    }
+
+    private void uploadImages(){
+         new AsyncTask<Void,Void,List<String>>(){
+            @Override
+            protected List<String> doInBackground(Void... voids) {
+                List<String> result = new ArrayList<>();
+                SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                        getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+                String token = sharedPref.getString("token", null);
+                RestServiceClient client = RestServiceClient.getInstance();
+                for (String i : imageListData){
+                    Pair<String,String> res = client.uploadImage(token,client.encodeToString(i));
+                    result.add(res.getSecond());
+                    Log.d("UPLOAD",res.getSecond());
+                }
+                return result;
+            }
+
+            @Override
+            protected void onPostExecute(List<String> strings) {
+                Log.d("UPLOAD","postExec" + strings);
+                imageUriData = (ArrayList<String>) strings;
+            }
+        }.execute();
+
     }
 }

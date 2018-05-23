@@ -27,7 +27,7 @@ import org.apache.commons.math3.util.Pair;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ProductAdapter.onItemClickListener {
 
     private Context mainActivity = this;
 
@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
             AsyncTask<String,Void,List<Product>> task = new GetProductListAsyncTask();
             task.execute("get-product");
         } else {
-            adapter = new ProductAdapter(productData);
+            adapter = new ProductAdapter(productData,this);
             recyclerView.setAdapter(adapter);
         }
 
@@ -140,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
             task.execute("get-my-product");
         } else {
 
-            adapter = new ProductAdapter(myProductData);
+            adapter = new ProductAdapter(myProductData,this);
             recyclerView.setAdapter(adapter);
         }
     }
@@ -170,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(List<Product> products) {
             if (products != null) {
                 productData = products;
-                adapter = new ProductAdapter(productData);
+                adapter = new ProductAdapter(productData,MainActivity.this);
                 recyclerView.setAdapter(adapter);
             } else {
                 // Error
@@ -197,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(List<Product> products) {
             if (products != null) {
                 myProductData = products;
-                adapter = new ProductAdapter(myProductData);
+                adapter = new ProductAdapter(myProductData,MainActivity.this);
                 recyclerView.setAdapter(adapter);
             } else {
                 // Error
@@ -273,4 +273,11 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onItemClick(Product product) {
+        Intent intent = new Intent(MainActivity.this,ViewProductActivity.class);
+        intent.putExtra("product",product);
+        intent.putExtra("type", lastNavigationItemSelected);
+        startActivity(intent);
+    }
 }
